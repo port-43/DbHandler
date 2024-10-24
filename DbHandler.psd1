@@ -9,13 +9,14 @@
     Copyright = '(c) 2024 Jeremiah Haywood. All rights reserved.'
 
     # Version number of this module.
-    ModuleVersion = '1.0'
+    ModuleVersion = '1.1'
 
     # Minimum version of PowerShell this module requires
     PowerShellVersion = '7.4'
 
     # Script files (.ps1) that are run in the caller's environment prior to importing this module.
     ScriptsToProcess = @(
+        '.\classes\AsyncResult',
         '.\classes\DbHandler'
     )
 
@@ -23,11 +24,11 @@
     RequiredAssemblies = $(
         if ($env:OS -ne 'Windows_NT') {
             @(
-                ".\lib\linux\System.Data.SQLite.dll"
+                ".\src\lib\SQLite\linux\System.Data.SQLite.dll"
             )
         } else {
             @(
-                ".\lib\win\System.Data.SQLite.dll"
+                ".\src\lib\SQLite\win\System.Data.SQLite.dll"
             )
         }
     )
