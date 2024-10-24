@@ -24,6 +24,7 @@ $Handler    = [DbHandler]::new('192.168.20.103', 'test_database', '5432', 'Postg
 ```
 
 ## Querying data
+### Synchronous
 ```powershell
 # simple query
 $Statement = "SELECT * FROM test_table"
@@ -34,7 +35,47 @@ $Statement = "SELECT * FROM test_table WHERE name = @name"
 $Param     = [ordered]@{name = "test"}
 $Handler.GetDatabaseData($Statement, $Param)
 ```
+### Asynchronous
+```powershell
+# async query
+$Statement = "SELECT * FROM test_table"
+$Result = $Handler.GetDatabaseDataAsync($Statement)
+
+...do other work
+
+$Result.Await()
+
+# async await method chaining
+$Statement = "SELECT * FROM test_table WHERE name = @name"
+$Param     = [ordered]@{name = "test"}
+$Result = $Handler.GetDatabaseDataAsync($Statement, $Param).Await()
+
+# setting async await timeout in seconds
+# will throw a timeout exception due to the query taking longer than the configured time of 1 second
+$Statement = "SELECT pg_sleep(10) FROM test_table"
+$Param     = [ordered]@{name = "test"}
+$Result = $Handler.GetDatabaseDataAsync($Statement, $Param).Await(1)
+
+# using asyncresult status method to await multiple results
+$Statement1 = 'SELECT pg_sleep(2) as "two" FROM test_table1'
+$Statement2 = 'SELECT pg_sleep(4) as "four" FROM test_table2'
+
+$Result1 = $Handler.GetDatabaseDataAsync($Statement1)
+$Result2 = $Handler.GetDatabaseDataAsync($Statement2)
+
+[AsyncResult]::AwaitAll(@($Result1, $Result2)) # will return both results
+
+# using asyncresult status method to await the first completed query
+$Statement1 = 'SELECT pg_sleep(2) as "two" FROM test_table1'
+$Statement2 = 'SELECT pg_sleep(4) as "four" FROM test_table2'
+
+$Result1 = $Handler.GetDatabaseDataAsync($Statement1)
+$Result2 = $Handler.GetDatabaseDataAsync($Statement2)
+
+[AsyncResult]::AwaitAny(@($Result1, $Result2)) # will only return "two"
+```
 ## Setting data
+### Synchronous
 ```powershell
 # simple statement
 $Statement = "CREATE TABLE test_table (name varchar, fname varchar, lname varchar);"
@@ -49,6 +90,22 @@ $Handler.SetDatabaseDataTransaction($Statement, $Param)
 $Statement = "INSERT INTO test_table (name, fname, lname) VALUES (@name, @first, @last)"
 $Param     = [ordered]@{name = "test"; first = "first"; last = "last"}
 $Handler.SetDatabaseDataTransaction($Statement, $Param)
+```
+### Asynchronous
+```powershell
+# simple statement
+$Statement = "CREATE TABLE test_table (name varchar, fname varchar, lname varchar);"
+$Result = $Handler.SetDatabaseDataAsync($Statement).Await()
+
+# using parameters
+$Statement = "INSERT INTO test_table (name, fname, lname) VALUES (@name, @first, @last)"
+$Param     = [ordered]@{name = "test"; first = "first"; last = "last"}
+$Result = $Handler.SetDatabaseDataAsync($Statement, $Param).Await()
+
+# using transactions
+$Statement = "INSERT INTO test_table (name, fname, lname) VALUES (@name, @first, @last)"
+$Param     = [ordered]@{name = "test"; first = "first"; last = "last"}
+$Result = $Handler.SetDatabaseDataTransactionAsync($Statement, $Param).Await()
 ```
 
 ## Logging/Debugging
@@ -69,7 +126,7 @@ Example log output:
 {"timestamp":"2024-04-30 12:04:00.383","level":"info","thread":25,"hostname":"C-3PO","method":"GetDatabaseData ([string] $Statement, [OrderedDictionary] $Parameters)","message":"Opening db connection"}
 {"timestamp":"2024-04-30 12:04:00.396","level":"info","thread":25,"hostname":"C-3PO","method":"GetDatabaseData ([string] $Statement, [OrderedDictionary] $Parameters)","message":"Submitting query - SELECT * FROM test_table WHERE name = @name"}
 {"timestamp":"2024-04-30 12:04:00.398","level":"info","thread":25,"hostname":"C-3PO","method":"GetDatabaseData ([string] $Statement, [OrderedDictionary] $Parameters)","message":"Parameters - name=test"}
-{"timestamp":"2024-04-30 12:04:00.405","level":"info","thread":25,"hostname":"C-3PO","method":"GetDatabaseData ([string] $Statement, [OrderedDictionary] $Parameters)","message":"Closing db connection"}
+{"timestamp":"2024-04-30 12:04:00.405","level":"info","thread":25,"hostname":"C-3PO","method":"GetDatabaseData ([string] $Statement, [OrderedDictionary] $Parameters)","message":"*Closing* db connection"}
 
 # logfmt
 timestamp="2024-04-30 12:09:05.406" level=info thread=25 hostname=C-3PO method="GetDatabaseData ([string] $Statement, [OrderedDictionary] $Parameters)" message="Opening db connection"
@@ -112,4 +169,4 @@ $Statement = "SELECT * FROM test_table WHERE name = @name"
 }
 ```
 
-If you want logging to to still work in a multithreaded environment you will need to explicitiy set `$InformationPreference = 'continue'` before.
+If you want logging to to still work in a multithreaded environment you will need to explicitiy set `$InformationPreference = 'continue'` before. Of note, logging for the async commands will not be output to stdout due to the command running in a separate runspace. However, any errors will still surface once the async result is awaited.
