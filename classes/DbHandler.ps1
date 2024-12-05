@@ -368,6 +368,62 @@ class DbHandler {
         return [AsyncResult]::new($AsyncObject, $Job)
     }
 
+    # this method uses the odbc/sqlite .NET framework to execute DDL statements against a database..
+    [Int] ExecuteDDL([string] $Statement) {
+        $Method = 'ExecuteDDL([string] $Statement)'
+
+        $this.Log('info','Executing DDL statements', $Method)
+
+        return $this.ExecuteNonQueryTransaction($Statement)
+    }
+
+    # this method uses the odbc/sqlite .NET framework to execute DDL statements with parameters against a database..
+    [Int] ExecuteDDL([string] $Statement, [OrderedDictionary] $Parameters) {
+        $Method = 'ExecuteDDL([string] $Statement, [OrderedDictionary] $Parameters)'
+
+        $this.Log('info','Executing DDL statements', $Method)
+
+        return $this.ExecuteNonQueryTransaction($Statement, $Parameters)
+    }
+
+    # this async method uses the odbc/sqlite .NET framework to execute DDL statements against a database.
+    [AsyncResult] ExecuteDDLAsync([string] $Statement) {
+        $Method = 'ExecuteDDL([string] $Statement)'
+
+        $Job = [powershell]::Create().AddScript({
+            param ($Statement, $Handler)
+            $Handler.ExecuteNonQueryTransaction($Statement)
+        }).AddArgument($Statement).AddArgument($this)
+
+        $this.Log('info','Executing DDL statements asynchronously', $Method)
+
+        $Job.RunspacePool = $this.RunspacePool
+        $AsyncObject      = $Job.BeginInvoke()
+
+        $this.Log('info','Returning async result', $Method)
+
+        return [AsyncResult]::new($AsyncObject, $Job)
+    }
+
+    # this async method uses the odbc/sqlite .NET framework to execute DDL statements with parameters against a database..
+    [AsyncResult] ExecuteDDLAsync([string] $Statement, [OrderedDictionary] $Parameters) {
+        $Method = 'ExecuteDDL([string] $Statement, [OrderedDictionary] $Parameters)'
+
+        $Job = [powershell]::Create().AddScript({
+            param ($Statement, $Handler, $Parameters)
+            $Handler.ExecuteNonQueryTransaction($Statement, $Parameters)
+        }).AddArgument($Statement).AddArgument($this).AddArgument($Parameters)
+
+        $this.Log('info','Executing DDL statements asynchronously', $Method)
+
+        $Job.RunspacePool = $this.RunspacePool
+        $AsyncObject      = $Job.BeginInvoke()
+
+        $this.Log('info','Returning async result', $Method)
+
+        return [AsyncResult]::new($AsyncObject, $Job)
+    }
+
     # this method executes a standard query and returns the results
     [List[pscustomobject]] hidden ExecuteQuery([string] $Statement) {
         $Method = 'ExecuteQuery ([string] $Statement)'
