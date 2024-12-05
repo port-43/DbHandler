@@ -16,6 +16,9 @@
 
     # Script files (.ps1) that are run in the caller's environment prior to importing this module.
     ScriptsToProcess = @(
+        '.\classes\IQueryResult',
+        '.\classes\QueryObjResult',
+        '.\classes\QueryIntResult',
         '.\classes\AsyncResult',
         '.\classes\DbHandler'
     )
