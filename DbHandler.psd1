@@ -9,7 +9,7 @@
     Copyright = '(c) 2024 Jeremiah Haywood. All rights reserved.'
 
     # Version number of this module.
-    ModuleVersion = '1.1'
+    ModuleVersion = '1.2'
 
     # Minimum version of PowerShell this module requires
     PowerShellVersion = '7.4'
