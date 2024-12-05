@@ -90,6 +90,35 @@ $Handler.SetDatabaseDataTransaction($Statement, $Param)
 $Statement = "INSERT INTO test_table (name, fname, lname) VALUES (@name, @first, @last)"
 $Param     = [ordered]@{name = "test"; first = "first"; last = "last"}
 $Handler.SetDatabaseDataTransaction($Statement, $Param)
+
+# set and get with parameters
+$Statement = @"
+UPDATE test_table
+SET name = ?
+WHERE id = ?
+RETURNING *;
+"@
+$Param     = [ordered]@{name = "test"; id = 1}
+$Handler.SetAndGetDatabaseData($Statement, $Param)
+
+# set and get with parameters using transactions
+$Statement = @"
+UPDATE test_table
+SET name = ?
+WHERE id = ?
+RETURNING *;
+"@
+$Param     = [ordered]@{name = "test"; id = 1}
+$Handler.SetAndGetDatabaseDataTransaction($Statement, $Param)
+
+# execute DDL statements (all DDL executions use transactions)
+$Statement = @"
+CREATE TABLE public.testing (
+    name varchar
+);
+"@
+
+$Handler.ExecuteDDL($Statement)
 ```
 ### Asynchronous
 ```powershell
@@ -106,6 +135,35 @@ $Result = $Handler.SetDatabaseDataAsync($Statement, $Param).Await()
 $Statement = "INSERT INTO test_table (name, fname, lname) VALUES (@name, @first, @last)"
 $Param     = [ordered]@{name = "test"; first = "first"; last = "last"}
 $Result = $Handler.SetDatabaseDataTransactionAsync($Statement, $Param).Await()
+
+# set and get with parameters
+$Statement = @"
+UPDATE test_table
+SET name = ?
+WHERE id = ?
+RETURNING *;
+"@
+$Param     = [ordered]@{name = "test"; id = 1}
+$Handler.SetAndGetDatabaseDataAsync($Statement, $Param).Await()
+
+# set and get with parameters using transactions
+$Statement = @"
+UPDATE test_table
+SET name = ?
+WHERE id = ?
+RETURNING *;
+"@
+$Param     = [ordered]@{name = "test"; id = 1}
+$Handler.SetAndGetDatabaseDataTransactionAsync($Statement, $Param).Await()
+
+# execute DDL statements (all DDL executions use transactions)
+$Statement = @"
+CREATE TABLE public.testing (
+    name varchar
+);
+"@
+
+$Handler.ExecuteDDLAsync($Statement).Await()
 ```
 
 ## Logging/Debugging
