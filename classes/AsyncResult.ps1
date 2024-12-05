@@ -4,8 +4,6 @@ class AsyncResult {
     [System.Object] $Async
     [System.Object] $Ps
     [System.Object] $Value
-    # WIP - Testing out returning exceptions
-    # [IQueryResult] $QueryResult
 
     # asycn result constructor
     AsyncResult($AsyncObject, $Runspace) {
@@ -38,42 +36,6 @@ class AsyncResult {
 
         return $Result
     }
-
-    # WIP - Testing out returning exceptions
-    # [IQueryResult] AwaitT() {
-    #     $Result = $null
-    #     $ThisError = $null
-    #     $ThisQueryResult = $null
-
-    #     if ($this.QueryResult) {
-    #         return $this.QueryResult
-    #     }
-
-    #     if ($null -ne $this.Ps -and $null -ne $this.Async) {
-    #         while (!$this.Async.IsCompleted) {
-    #             Start-Sleep -Milliseconds 10
-    #         }
-
-    #         try {
-    #             if ($this.Async.IsCompleted) {
-    #                 $Result = $this.Ps.EndInvoke($this.Async)
-    #                 $this.Value = $Result
-    #             }
-    #         } catch {
-    #             $ThisError = $_
-    #         }
-
-    #         if ($Result -is [Int]) {
-    #             $ThisQueryResult = [QueryIntResult]::new($Result, $ThisError)
-    #         } else {
-    #             $ThisQueryResult = [QueryObjResult]::new($Result, $ThisError)
-    #         }
-
-    #         $this.QueryResult = $ThisQueryResult
-    #     }
-
-    #     return $ThisQueryResult
-    # }
 
     # await async result value for n amount of seconds
     [System.Object] Await([Int] $TimeoutInSeconds) {
@@ -125,19 +87,6 @@ class AsyncResult {
 
         return $ResultList
     }
-
-    # WIP - Testing out returning exceptions
-    # await all async results
-    # [List[IQueryResult]] static AwaitAllT([AsyncResult[]] $AsyncResults) {
-    #     $ResultList = [List[IQueryResult]]::new()
-
-    #     foreach ($Result in $AsyncResults) {
-    #         # allow processing to continue if error is returned
-    #         $ResultList.Add($Result.AwaitT())
-    #     }
-
-    #     return $ResultList
-    # }
 
     # await the first async result to complete
     [System.Object] static AwaitAny([AsyncResult[]] $AsyncResults) {

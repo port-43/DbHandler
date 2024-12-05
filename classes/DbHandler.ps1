@@ -81,23 +81,6 @@ class DbHandler {
         return $this.ExecuteQuery($Statement, $Parameters)
     }
 
-    # WIP - Testing out returning exceptions
-    # [QueryObjResult] GetDatabaseDataT ([string] $Statement, [OrderedDictionary] $Parameters) {
-    #     $this.ValidateGetStatement($Statement)
-    #     $Method = 'GetDatabaseData ([string] $Statement, [OrderedDictionary] $Parameters)'
-    #     $Result = $null
-    #     $ThisError = $null
-
-    #     $this.Log('info','Querying database', $Method)
-    #     try {
-    #         $Result = $this.ExecuteQuery($Statement, $Parameters)
-    #     } catch {
-    #         $ThisError = $_
-    #     }
-
-    #     return [QueryObjResult]::new($Result, $ThisError)
-    # }
-
     # this async method uses the odbc/sqlite .NET framework to retrieve data from a database. This method only accepts SELECT/PREPARE statements
     [AsyncResult] GetDatabaseDataAsync ([string] $Statement) {
         $this.ValidateGetStatement($Statement)
@@ -739,26 +722,6 @@ class DbHandler {
     [System.Object] hidden CreateConnection() {
         return ($this.DbType -eq [DbType]::Odbc) ? [System.Data.Odbc.OdbcConnection]::new() : [System.Data.SQLite.SQLiteConnection]::new()
     }
-
-    # [void] ChangePassword([SecureString] $Password) {
-    #     $Method = 'ChangePassword([SecureString] $Password)'
-
-    #     $DBConnection = $this.CreateConnection()
-    #     $DBConnection.ConnectionString = $this.ConnectionString
-    #     try {
-    #         $this.Log('info','Opening db connection', $Method)
-    #         $DBConnection.Open()
-
-    #         $this.Log('info','Changing Password', $Method)
-    #         $DBConnection.ChangePassword([pscredential]::new('placeholder', $Password).GetNetworkCredential().Password)
-    #     } catch {
-    #         $this.Log('error',$_.Exception.Message, $Method)
-    #         throw $_
-    #     } finally {
-    #         $this.Log('info','Closing db connection', $Method)
-    #         $DBConnection.Close()
-    #     }
-    # }
 
     # set sqlite connection string
     [Void] SetConnectionString([String] $DbPath) {
