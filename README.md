@@ -228,3 +228,10 @@ $Statement = "SELECT * FROM test_table WHERE name = @name"
 ```
 
 If you want logging to to still work in a multithreaded environment you will need to explicitiy set `$InformationPreference = 'continue'` before. Of note, logging for the async commands will not be output to stdout due to the command running in a separate runspace. However, any errors will still surface once the async result is awaited.
+
+### DDL Execution
+The class calls `ExecuteNonQuery` to submit the DDL statements to the database. In general `ExecuteNonQuery` behaves in the following manner when returning values:
+- For DML statements, `ExecuteNonQuery` returns the number of rows **affected** by the command.
+- For DDL statements (e.g., CREATE TABLE), no rows are directly affected, so it typically returns:
+  - `0` in many databases (e.g., SQL Server, MySQL, PostgreSQL)
+  - `-1` in some database providers or configurations
