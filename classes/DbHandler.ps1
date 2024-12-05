@@ -81,6 +81,23 @@ class DbHandler {
         return $this.ExecuteQuery($Statement, $Parameters)
     }
 
+    # WIP - Testing out returning exceptions
+    # [QueryObjResult] GetDatabaseDataT ([string] $Statement, [OrderedDictionary] $Parameters) {
+    #     $this.ValidateGetStatement($Statement)
+    #     $Method = 'GetDatabaseData ([string] $Statement, [OrderedDictionary] $Parameters)'
+    #     $Result = $null
+    #     $ThisError = $null
+
+    #     $this.Log('info','Querying database', $Method)
+    #     try {
+    #         $Result = $this.ExecuteQuery($Statement, $Parameters)
+    #     } catch {
+    #         $ThisError = $_
+    #     }
+
+    #     return [QueryObjResult]::new($Result, $ThisError)
+    # }
+
     # this async method uses the odbc/sqlite .NET framework to retrieve data from a database. This method only accepts SELECT/PREPARE statements
     [AsyncResult] GetDatabaseDataAsync ([string] $Statement) {
         $this.ValidateGetStatement($Statement)
@@ -246,6 +263,128 @@ class DbHandler {
         return [AsyncResult]::new($AsyncObject, $Job)
     }
 
+    # this method uses the odbc/sqlite .NET framework to set and retrieve data from a database. This method only accepts statements that UPDATE with a RETURNING clause
+    [List[pscustomobject]] SetAndGetDatabaseData ([string] $Statement) {
+        $this.ValidateSetAndGetStatement($Statement)
+        $Method = 'SetAndGetDatabaseData ([string] $Statement)'
+
+        $this.Log('info','Querying database', $Method)
+
+        return $this.ExecuteQuery($Statement)
+    }
+
+    # this method uses the odbc/sqlite .NET framework to set and retrieve data from a database with parameters. This method only accepts statements that UPDATE with a RETURNING clause
+    [List[pscustomobject]] SetAndGetDatabaseData ([string] $Statement, [OrderedDictionary] $Parameters) {
+        $this.ValidateSetAndGetStatement($Statement)
+        $Method = 'SetAndGetDatabaseData ([string] $Statement, [OrderedDictionary] $Parameters)'
+
+        $this.Log('info','Querying database', $Method)
+
+        return $this.ExecuteQuery($Statement, $Parameters)
+    }
+
+    # this async method uses the odbc/sqlite .NET framework to set and retrieve data from a database. This method only accepts statements that UPDATE with a RETURNING clause
+    [AsyncResult] SetAndGetDatabaseDataAsync ([string] $Statement) {
+        $this.ValidateSetAndGetStatement($Statement)
+        $Method = 'SetAndGetDatabaseDataAsync ([string] $Statement)'
+
+        # Start a background job for the async operation
+        $Job = [powershell]::Create().AddScript({
+            param ($Statement, $Handler)
+            $Handler.ExecuteQuery($Statement)
+        }).AddArgument($Statement).AddArgument($this)
+
+        $this.Log('info','Updating database and retrieving data asynchronously', $Method)
+
+        $Job.RunspacePool = $this.RunspacePool
+        $AsyncObject      = $Job.BeginInvoke()
+
+        $this.Log('info','Returning async result', $Method)
+
+        return [AsyncResult]::new($AsyncObject, $Job)
+    }
+
+    # this async method uses the odbc/sqlite .NET framework to set and retrieve data from a database with parameters. This method only accepts statements that UPDATE with a RETURNING clause
+    [AsyncResult] SetAndGetDatabaseDataAsync ([string] $Statement, [OrderedDictionary] $Parameters) {
+        $this.ValidateSetAndGetStatement($Statement)
+        $Method = 'SetAndGetDatabaseDataAsync ([string] $Statement, [OrderedDictionary] $Parameters)'
+
+        # Start a background job for the async operation
+        $Job = [powershell]::Create().AddScript({
+            param ($Statement, $Handler, $Parameters)
+            $Handler.ExecuteQuery($Statement, $Parameters)
+        }).AddArgument($Statement).AddArgument($this).AddArgument($Parameters)
+
+        $this.Log('info','Updating database and retrieving data asynchronously', $Method)
+
+        $Job.RunspacePool = $this.RunspacePool
+        $AsyncObject      = $Job.BeginInvoke()
+
+        $this.Log('info','Returning async result', $Method)
+
+        return [AsyncResult]::new($AsyncObject, $Job)
+    }
+
+    # this method uses the odbc/sqlite .NET framework to set and retrieve data from a database using transactions. This method only accepts statements that UPDATE with a RETURNING clause
+    [List[pscustomobject]] SetAndGetDatabaseDataTransaction ([string] $Statement) {
+        $this.ValidateSetAndGetStatement($Statement)
+        $Method = 'SetAndGetDatabaseDataTransaction ([string] $Statement)'
+
+        $this.Log('info','Querying database', $Method)
+
+        return $this.ExecuteQueryTransaction($Statement)
+    }
+
+    # this method uses the odbc/sqlite .NET framework to set and retrieve data from a database with parameters using transactions. This method only accepts statements that UPDATE with a RETURNING clause
+    [List[pscustomobject]] SetAndGetDatabaseDataTransaction ([string] $Statement, [OrderedDictionary] $Parameters) {
+        $this.ValidateSetAndGetStatement($Statement)
+        $Method = 'SetAndGetDatabaseDataTransaction ([string] $Statement, [OrderedDictionary] $Parameters)'
+
+        $this.Log('info','Querying database', $Method)
+
+        return $this.ExecuteQueryTransaction($Statement, $Parameters)
+    }
+
+    # this async method uses the odbc/sqlite .NET framework to set and retrieve data from a database using transactions. This method only accepts statements that UPDATE with a RETURNING clause
+    [AsyncResult] SetAndGetDatabaseDataTransactionAsync ([string] $Statement) {
+        $this.ValidateSetAndGetStatement($Statement)
+        $Method = 'SetAndGetDatabaseDataTransactionAsync ([string] $Statement)'
+
+        $Job = [powershell]::Create().AddScript({
+            param ($Statement, $Handler)
+            $Handler.ExecuteQueryTransaction($Statement)
+        }).AddArgument($Statement).AddArgument($this)
+
+        $this.Log('info','Updating database and retrieving data asynchronously', $Method)
+
+        $Job.RunspacePool = $this.RunspacePool
+        $AsyncObject      = $Job.BeginInvoke()
+
+        $this.Log('info','Returning async result', $Method)
+
+        return [AsyncResult]::new($AsyncObject, $Job)
+    }
+
+    # this async method uses the odbc/sqlite .NET framework to set and retrieve data from a database with parameters using transactions. This method only accepts statements that UPDATE with a RETURNING clause
+    [AsyncResult] SetAndGetDatabaseDataTransactionAsync ([string] $Statement, [OrderedDictionary] $Parameters) {
+        $this.ValidateSetAndGetStatement($Statement)
+        $Method = 'SetAndGetDatabaseDataTransactionAsync ([string] $Statement, [OrderedDictionary] $Parameters)'
+
+        $Job = [powershell]::Create().AddScript({
+            param ($Statement, $Handler, $Parameters)
+            $Handler.ExecuteQueryTransaction($Statement, $Parameters)
+        }).AddArgument($Statement).AddArgument($this).AddArgument($Parameters)
+
+        $this.Log('info','Updating database and retrieving data asynchronously', $Method)
+
+        $Job.RunspacePool = $this.RunspacePool
+        $AsyncObject      = $Job.BeginInvoke()
+
+        $this.Log('info','Returning async result', $Method)
+
+        return [AsyncResult]::new($AsyncObject, $Job)
+    }
+
     # this method executes a standard query and returns the results
     [List[pscustomobject]] hidden ExecuteQuery([string] $Statement) {
         $Method = 'ExecuteQuery ([string] $Statement)'
@@ -341,6 +480,126 @@ class DbHandler {
             return $Records
         } catch {
             $this.Log('error',$_.Exception.Message, $Method)
+            throw $_
+        } finally {
+            $this.Log('info','Closing db connection', $Method)
+
+            if ($Reader) {
+                $Reader.Dispose()
+            }
+
+            $DBConnection.Close()
+        }
+    }
+
+    # this method executes a standard query and returns the results
+    [List[pscustomobject]] hidden ExecuteQueryTransaction([string] $Statement) {
+        $Method = 'ExecuteQueryTransaction ([string] $Statement)'
+        $Records = [List[pscustomobject]]::new()
+        $DBConnection = $this.CreateConnection()
+        $DBConnection.ConnectionString = $this.ConnectionString
+        $Transaction = $null
+
+        try {
+            # Opening DB connection
+            $this.Log('info','Opening db connection', $Method)
+            $DBConnection.Open()
+            $Transaction = $DBConnection.BeginTransaction()
+            $DBCommand = $DBConnection.CreateCommand();
+            $DBCommand.CommandText = $Statement
+            $DBCommand.Transaction = $Transaction
+
+            $this.Log('info',"Submitting query - $Statement", $Method)
+            $Reader = $DBCommand.ExecuteReader()
+            $FieldCount = $Reader.FieldCount
+
+            # Record data while there are records being returned
+            while ($Reader.read()) {
+                $Record = [ordered]@{}
+                for ($i = 0; $i -lt $FieldCount; $i++) {
+                    # cast boolean values
+                    if ($Reader.GetDataTypeName($i) -eq 'bool') {
+                        # need to cast to int first due to being a string
+                        $Record.add($Reader.GetName($i), [bool] [int] $Reader.GetValue($i))
+                    } else {
+                        $Record.add($Reader.GetName($i), $Reader.GetValue($i))
+                    }
+                }
+                if ($Record) {
+                    $Records.add([pscustomobject]$Record)
+                }
+            }
+
+            $Transaction.Commit()
+
+            return $Records
+        } catch {
+            $this.Log('error',$_.Exception.Message, $Method)
+            $Transaction.Rollback()
+            throw $_
+        } finally {
+            $this.Log('info','Closing db connection', $Method)
+
+            if ($Reader) {
+                $Reader.Dispose()
+            }
+
+            $DBConnection.Close()
+        }
+    }
+
+    # this method executes a standard query and returns the results
+    [List[pscustomobject]] hidden ExecuteQueryTransaction([string] $Statement, [OrderedDictionary] $Parameters) {
+        $Method = 'ExecuteQueryTransaction ([string] $Statement, [OrderedDictionary] $Parameters)'
+        $Records = [List[pscustomobject]]::new()
+        $DBConnection = $this.CreateConnection()
+        $DBConnection.ConnectionString = $this.ConnectionString
+        $Transaction = $null
+        $Bindings = @()
+
+        try {
+            # Opening DB connection
+            $this.Log('info','Opening db connection', $Method)
+            $DBConnection.Open()
+            $Transaction = $DBConnection.BeginTransaction()
+            $DBCommand = $DBConnection.CreateCommand();
+            $DBCommand.CommandText = $Statement
+
+            foreach ($Key in $Parameters.Keys) {
+                [void] $DBCommand.Parameters.AddWithValue("@$Key",$Parameters[$Key])
+                $Bindings += "$Key=$($Parameters[$Key])"
+            }
+
+            $DBCommand.Transaction = $Transaction
+
+            $this.Log('info',"Submitting query - $Statement", $Method)
+            $this.Log('info',"Parameters - $($Bindings -join ', ')", $Method)
+            $Reader = $DBCommand.ExecuteReader()
+            $FieldCount = $Reader.FieldCount
+
+            # Record data while there are records being returned
+            while ($Reader.read()) {
+                $Record = [ordered]@{}
+                for ($i = 0; $i -lt $FieldCount; $i++) {
+                    # cast boolean values
+                    if ($Reader.GetDataTypeName($i) -eq 'bool') {
+                        # need to cast to int first due to being a string
+                        $Record.add($Reader.GetName($i), [bool] [int] $Reader.GetValue($i))
+                    } else {
+                        $Record.add($Reader.GetName($i), $Reader.GetValue($i))
+                    }
+                }
+                if ($Record) {
+                    $Records.add([pscustomobject]$Record)
+                }
+            }
+
+            $Transaction.Commit()
+
+            return $Records
+        } catch {
+            $this.Log('error',$_.Exception.Message, $Method)
+            $Transaction.Rollback()
             throw $_
         } finally {
             $this.Log('info','Closing db connection', $Method)
@@ -586,6 +845,21 @@ class DbHandler {
 
         if ($Statement -notmatch '^UPDATE|^INSERT|^DELETE|^PREPARE|^CREATE') {
             throw "Statement is invalid"
+        }
+    }
+
+    # validate the set and get statement
+    [Void] hidden ValidateSetAndGetStatement ([string] $Statement) {
+        if ([string]::IsNullOrEmpty($Statement)) {
+            throw "Statement must not be null"
+        }
+
+        if ($Statement -notmatch '^UPDATE') {
+            throw "Statement is invalid, must begin with UPDATE"
+        }
+
+        if ($Statement -notmatch 'RETURNING\b.*?;') {
+            throw "Statement is invalid, must have a RETURNING statement"
         }
     }
 }
